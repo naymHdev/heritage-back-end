@@ -38,19 +38,37 @@ async function run() {
 
     // Database collection
     const userCollection = client.db("heritage").collection("user");
+    const propertyCollection = client.db("heritage").collection("allProperty");
+    const userBidsCollection = client.db("heritage").collection("userBids");
 
     // Collection's routes
+
+    // Bid property
+    app.get("/api/bids", async (req, res) => {
+      const result = await userBidsCollection.find().toArray();
+      res.send;
+    });
+    app.post("/api/bids", async (req, res) => {
+      const bids = req.body;
+      const result = await userBidsCollection.insertOne(bids);
+      res.send(result);
+    });
+
+    // all property route
+    app.get("/api/property", async (req, res) => {
+      const result = await propertyCollection.find().toArray();
+      res.send(result);
+    });
 
     // User's signup route
     app.post("/api/signUp", async (req, res) => {
       const userInfo = req.body;
       const result = await userCollection.insertOne(userInfo);
-      console.log("signup result__", result);
       res.send(result);
     });
 
     app.get("/api/signUp", async (req, res) => {
-      const result = await userCollection.findOne();
+      const result = await userCollection.find().toArray();
       res.send(result);
     });
 
