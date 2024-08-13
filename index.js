@@ -46,11 +46,11 @@ async function run() {
     // Bid property
     app.get("/api/bids", async (req, res) => {
       const result = await userBidsCollection.find().toArray();
-      res.send;
+      res.send(result);
     });
     app.post("/api/bids", async (req, res) => {
-      const bids = req.body;
-      const result = await userBidsCollection.insertOne(bids);
+      const bid = req.body;
+      const result = await userBidsCollection.insertOne(bid);
       res.send(result);
     });
 
@@ -67,9 +67,18 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/api/signUp", async (req, res) => {
-      const result = await userCollection.find().toArray();
-      res.send(result);
+    app.get("/api/signUp/:email", async (req, res) => {
+      try {
+        const email = req.params.email;
+        const user = await userCollection.findOne({ email });
+        if (!user) {
+          return res.status(404).json({ error: "User not found" });
+        }
+        res.status(200).json(user);
+      } catch (err) {
+        console.error("Error fetching user:", err);
+        res.status(500).json({ error: "Internal server error" });
+      }
     });
 
     // Send a ping to confirm a successful connection
