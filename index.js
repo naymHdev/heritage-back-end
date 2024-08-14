@@ -7,7 +7,11 @@ const port = process.env.PORT || 3000;
 
 // Middleware
 const corsOptions = {
-  origin: ["http://localhost:5173"],
+  origin: [
+    "http://localhost:5173",
+    "https://heritage-front-end.vercel.app",
+    "https://heritage-back-end.vercel.app",
+  ],
   credentials: true,
   optionsSuccessStatus: 200,
 };
@@ -55,6 +59,12 @@ async function run() {
     });
 
     // all property route
+    app.post("/api/property", async (req, res) => {
+      const addProperty = req.body;
+      const result = await propertyCollection.insertOne(addProperty);
+      res.send(result);
+    });
+
     app.get("/api/property", async (req, res) => {
       const result = await propertyCollection.find().toArray();
       res.send(result);
@@ -79,6 +89,11 @@ async function run() {
         console.error("Error fetching user:", err);
         res.status(500).json({ error: "Internal server error" });
       }
+    });
+
+    app.get("/api/allUser", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
