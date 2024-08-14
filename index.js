@@ -1,13 +1,13 @@
 const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 3000;
 
 // Middleware
 const corsOptions = {
-  origin: ["http://localhost:5173", "https://heritage-front-end.vercel.app",],
+  origin: ["http://localhost:5173", "https://heritage-front-end.vercel.app"],
   credentials: true,
   optionsSuccessStatus: 200,
 };
@@ -40,14 +40,28 @@ async function run() {
     const userCollection = client.db("heritage").collection("user");
     const propertyCollection = client.db("heritage").collection("allProperty");
     const userBidsCollection = client.db("heritage").collection("userBids");
+    const reviewsCollection = client.db("heritage").collection("reviews");
 
     // Collection's routes
+
+    //  user reviews routes
+    app.get("/api/review", async (req, res) => {
+      const result = await reviewsCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/api/review", async (req, res) => {
+      const rev = req.body;
+      const result = await reviewsCollection.insertOne(rev);
+      res.send(result);
+    });
 
     // Bid property
     app.get("/api/bids", async (req, res) => {
       const result = await userBidsCollection.find().toArray();
       res.send(result);
     });
+
     app.post("/api/bids", async (req, res) => {
       const bid = req.body;
       const result = await userBidsCollection.insertOne(bid);
@@ -90,6 +104,36 @@ async function run() {
     app.get("/api/allUser", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
+    });
+
+    app.delete("/api/signUp/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+    app.put("/api/signUp/:id", async (req, res) => {
+      const userId = req.params.id;
+      const { roles } = req.body;
+
+      if (!ObjectId.isValid(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+
+      try {
+        const result = await db
+          .collection("users")
+          .updateOne({ _id: new ObjectId(userId) }, { $set: { roles } });
+
+        if (result.matchedCount === 0) {
+          return res.status(404).json({ message: "User not found" });
+        }
+        console.log("result____>", result);
+        res.json({ message: "User role updated successfully" });
+      } catch (error) {
+        console.error("Error updating user role:", error);
+        res.status(500).json({ message: "Error updating user role" });
+      }
     });
 
     // Send a ping to confirm a successful connection
